@@ -1,0 +1,82 @@
+# -*- coding: cp949 -*-
+from visual import *
+from math import *
+
+scene.range = (3.5,3.5,3.5)
+scene.center = (0,-2.5,0)
+scene.width = 800
+scene.height = 700
+
+rball = input("추의 반지름을 입력하세요(cm) : ")
+ball = sphere(pos=(0,0,0), radius=rball, color=color.green, opacity=0.8)
+base = box(pos=(0,-2.5,-1), size=(2,0.1,2))
+wall = box(pos=(0,-1,-1), size=(0.1,3,0.1))
+bar = cylinder(pos=(0,0,-1), radius=0.04, axis=(0,0,1), color=color.yellow)
+lineset = curve(pos=[ (bar.pos), (ball.pos)], color=color.gray(0.5))
+
+VArrow = arrow(pos=ball.pos, axis=(0,0,0) , color=color.yellow)
+VFlag = 1
+
+pi = 3.14159
+line_m = input("실의 길이를 입력하세요(m) : ")
+line = float(line_m)*10
+theta0 = input("초기 각도를 입력하세요 (°) : ")
+theta = (180 - theta0)*pi / 180
+g = 9.81
+
+
+omega = 0  # 각속도
+alpha = 0  # 각가속도
+a = 0      # 가속도
+v = 0      # 속도
+v_max = sqrt(2*g*line*(-cos(theta)))
+
+#-------------------------------------------------------
+# 애니메이션 코드
+#-------------------------------------------------------
+
+t = 0
+dt = 0.01
+deg_theta = 0
+
+label1 = label()
+label2 = label()
+label3 = label()
+label4 = label()
+
+while True:
+    rate(100)
+    t += dt
+
+    alpha = (g*sin(theta))/line
+    omega += alpha*dt
+    theta += omega*dt
+
+    deg_theta = 180 - theta*180./pi
+
+    v = v_max - sqrt(2*g*line*(1-cos(pi - theta)))
+
+    lineset.pos = [(bar.pos)+(0,0,1), (ball.pos)]
+    ball.pos = (line*sin(theta), line*cos(theta), 0)
+
+    VArrow.pos = ball.pos
+    if VFlag == 0:
+        VArrow.axis = (v*0.3,0,0)
+    else:
+        VArrow.axis = (-v*0.3,0,0)
+
+    if deg_theta >= theta0 - 0.01:
+        VFlag = 1
+    elif deg_theta <= -theta0 + 0.01:
+        VFlag = 0
+
+    T = 2*pi*sqrt(line/g)
+
+    label1.pos = base.pos + vector(0,-0.6,0)
+    label1.text = 'T : %.3f s' % (T)
+    label2.pos = base.pos + vector(0,-1,0)
+    label2.text = 'ball_radius : %.1f cm' % (rball)
+    label3.pos = base.pos + vector(0,-1.4,0)
+    label3.text = 'line : %.1f m' % (line)
+    label4.pos = base.pos + vector(0,-1.8,0)
+    label4.text = 'theta0 : %.1f' % (theta0)
